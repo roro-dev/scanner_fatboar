@@ -28,6 +28,18 @@ class MyScanner extends StatefulWidget
 }
   
 class _MyScannerState extends State<MyScanner>{
+
+  String barcode;
+  String errorMsg;
+
+  @override
+  void initState()
+  {
+    super.initState();
+    this.barcode = null;
+    this.errorMsg = null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -47,7 +59,16 @@ class _MyScannerState extends State<MyScanner>{
                 color: Colors.blue,
                 textColor: Colors.white,
                 splashColor: Colors.blueGrey,
-                onPressed: scan,
+                onPressed: () 
+                {
+                  scan();
+                  if(this.barcode != null && this.errorMsg == null)
+                  {
+                    print('good');
+                  } else {
+                    print('bad');
+                  }
+                },
                 child: const Text('SCAN QR CODE')
               ),
             ),
@@ -56,21 +77,33 @@ class _MyScannerState extends State<MyScanner>{
       ),
     );
   }
-}
 
-Future scan() async {
-  try {
-    String barcode = await BarcodeScanner.scan();
-    print(barcode);
-  } on PlatformException catch (e) {
-    if (e.code == BarcodeScanner.CameraAccessDenied) {
-      print('The user did not grant the camera permission!');
-    } else {
-      print('Unknown error: $e');
+  Future scan() async {
+    String message = "Une erreur est survenue";
+    try {
+      String barcode = await BarcodeScanner.scan();
+      setState(() {
+        this.barcode = barcode;
+      });
+    } on PlatformException catch (e) {
+      if (e.code == BarcodeScanner.CameraAccessDenied) {
+        message = "Vous n'avez pas donner l'autorisation de caméra !";
+      } else if(e.code == BarcodeScanner.UserCanceled) {
+        message = "UserCanceled";
+      } else {
+        message += " $e";
+      }
+      setState(() {
+        this.errorMsg = message;
+      });
+    } on FormatException{
+      print('User returned using the "back"-button before scanning anything');
+    } catch (e) {
+      setState(() {
+        this.errorMsg = message + " $e";
+      });
     }
-  } on FormatException{
-    print('null (User returned using the "back"-button before scanning anything. Result)');
-  } catch (e) {
-    print('Unknown error: $e');
   }
 }
+
+
