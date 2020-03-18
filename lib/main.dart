@@ -74,7 +74,7 @@ class _MyScannerState extends State<MyScanner>{
                     showAlert('Erreur', this.errorMsg.toString());
                   }
                 },
-                child: const Text('SCAN QR CODE')
+                child: const Text('Scanner un ticket.')
               ),
             ),
           ]
