@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/services.dart';
 
+import 'package:scanner/Constants.dart' as Constants;
+
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
@@ -61,12 +63,15 @@ class _MyScannerState extends State<MyScanner>{
                 splashColor: Colors.blueGrey,
                 onPressed: () 
                 {
+                  setState(() {
+                    this.barcode = null;
+                  });
                   scan();
                   if(this.barcode != null && this.errorMsg == null)
                   {
-                    print('good');
+                    updateTicket(this.barcode);
                   } else {
-                    print('bad');
+                    showAlert('Erreur', this.errorMsg.toString());
                   }
                 },
                 child: const Text('SCAN QR CODE')
@@ -76,6 +81,40 @@ class _MyScannerState extends State<MyScanner>{
         )
       ),
     );
+  }
+
+  showAlert(String title, String message) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(
+              title, 
+              style: TextStyle(
+                color: Color(0xffa94442),
+                fontWeight: FontWeight.bold
+              ),
+            ),
+            content: Text(message, style: TextStyle(
+              fontSize: 18.0,
+              color: Color(0xffa94442),
+            ),),
+            actions: <Widget>[
+              FlatButton(
+                child: new Icon(Icons.close, color: Colors.red,),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+  Future<void> updateTicket(String numero) async
+  {
+    print(numero);
   }
 
   Future scan() async {
@@ -97,7 +136,9 @@ class _MyScannerState extends State<MyScanner>{
         this.errorMsg = message;
       });
     } on FormatException{
-      print('User returned using the "back"-button before scanning anything');
+      setState(() {
+        this.errorMsg = "Une erreur est survenue";
+      });
     } catch (e) {
       setState(() {
         this.errorMsg = message + " $e";
